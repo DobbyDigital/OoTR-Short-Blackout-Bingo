@@ -1,5 +1,12 @@
 from random import seed,shuffle, randint
+from functools import partial
 import tkinter as tk
+
+
+outfile="Testing"+".txt"
+
+
+
 
 GoalList=[
 	"VISITALLADULT|1 Skulltula from 3 different Adult Dungeons",
@@ -86,6 +93,7 @@ GoalList=[
        "GTG|ICECAVERN|Defeat a White Wolfos",
        "DODONGOSCAVERN|LIZALFOS|Defeat all Lizalfos in Dodongo's Cavern",
        "SPIRITTEMPLE|LIZALFOS|Defeat all Lizalfos in Spirit Temple",
+        "FIRETEMPLE|Free 7 Different Gorons in Fire Temple",
        "JABUJABUSBELLY|Defeat Big Octo",
        "SHADOWBOSS|Defeat Bongo-Bongo",
        "FIRETEMPLE|Defeat both Flare Dancers",
@@ -104,7 +112,6 @@ GoalList=[
        "FIREKEYS|Obtain 6 Different Small Keys in Fire Temple",
        "FIREKEYS|Obtain all 8 Small Keys in Fire Temple",
        "IRONKNUCKLE|Defeat 4 Different Iron Knuckles",
-       "FIRETEMPLE|Free all 9 Gorons in Fire Temple",
        "GANONSCASTLE|Get to the end of Fire Trial",
        "GANONSCASTLE|Get to the end of Forest Trial",
        "GANONSCASTLE|Get to the end of Light Trial",
@@ -130,7 +137,6 @@ GoalList=[
 	"FAIRYSPELL|At least two Fairy Spells",
 	"Win A Bombchu Bowling Prize",
 	"Fall Prey to 3 Ice Traps",
-	"Find the Randomised Green Rupee",
        "SKULLREWARD|Collect the reward for 10 skulltula tokens",
        "SKULLREWARD|Collect the reward for 20 skulltula tokens",
        "Collect the song/item from Sheik at Colossus",
@@ -146,23 +152,40 @@ GoalList=[
 
 class SeedGUI():
     def __init__(self, master):
-        self.seed=StringVar()
+        self.seed=tk.StringVar()
+        self.master=master
+        self.mode=tk.StringVar()
+        self.mode.set("window")
+        print("Generating default seed")
         randomSeed=randint(10000000, 99999999)
+        print("Default seed generated")
         self.seed.set(str(randomSeed))
+        self.outfile=tk.StringVar()
+        self.outfile.set("Board_"+str(self.seed.get()))
 
         self.master.title("Seed for board generation")
-        self.SeedLabel=Label(self.master, text="Enter an integer seed for the board randomisation:")
-        self.SeedBox=Entry(self.master, textvariable=self.seed, state=NORMAL)
+        self.SeedLabel=tk.Label(self.master, text="Enter an integer seed for the board randomisation:")
+        self.SeedBox=tk.Entry(self.master, textvariable=self.seed)
         self.SeedLabel.grid(row=1, column=1)
         self.SeedBox.grid(row=1, column=2)
-        self.GenerateBoardButton=Button(self.master, text="Generate board", command=self.VerifySeed)
-        self.GenerateBoardButton.grid(row=3, column=1, columnspan=2)
+        self.ModeLabel=tk.Label(self.master, text="Create JSON file instead of window?")
+        self.JSONModeCheck=tk.Checkbutton(self.master, variable = self.mode, \
+                         onvalue = "JSON", offvalue ="window", height=1, \
+                         width = 10)
+        self.ModeLabel.grid(row=3, column=1)
+        self.JSONModeCheck.grid(row=3, column=2)
+        self.OutfileLabel=tk.Label(self.master, text="What filenameshould be used for the JSON file (if applicable)")
+        self.OutfileBox=tk.Entry(self.master, textvariable=self.outfile)
+        self.OutfileLabel.grid(row=4, column=1, rowspan=2)
+        self.OutfileBox.grid(row=4,column=2, rowspan=1)
+        self.GenerateBoardButton=tk.Button(self.master, text="Generate board", command=self.VerifySeed)
+        self.GenerateBoardButton.grid(row=6, column=1, columnspan=2)
 
     def VerifySeed(self):
         try:
             self.seed=int(self.seed.get())
         except:
-            self.ErrorLabel=Label(self.master, text="Error importing seed. Verify seed is integer")
+            self.ErrorLabel=tk.Label(self.master, text="Error importing seed. Verify seed is integer")
             self.ErrorLabel.grid(row=1, column=3)
             return
         self.master.destroy()
@@ -173,6 +196,7 @@ def GenerateBoard(randomisationSeed, goalList):
     goalDict={}
     goalSet=set()
     goals=[]
+    print("Generating board")
     for entry in goalList:
         splitTags=entry.split('|')
         if len(splitTags)==1:
@@ -181,21 +205,133 @@ def GenerateBoard(randomisationSeed, goalList):
             goal=splitTags[-1]
             tagList=splitTags[0:-1]
             goalDict[goal]=tagList
+    goalList=list(goalDict.keys())
     seed(randomisationSeed)
     shuffle(goalList)
     while len(goals)<25:
         newGoal=goalList.pop()
         if len(goalDict[newGoal])==0:
             goals.append(newGoal)
+            print("New goal added")
+            continue
+        foundBannedTag=False
+        for tag in goalDict[newGoal]:
+            if tag in goalSet:
+                foundBannedTag=True
+                print("Goal excluded")
+                break
+        if foundBannedTag==False:
+            goalSet.update(goalDict[newGoal])
+            goals.append(newGoal)
+            print("New goal added")
+    return goals
+        
+def GenerateBoardAndData(randomisationSeed, goalList):
+    goalDict={}
+    goalSet=set()
+    goals=[]
+    print("Generating board")
+    for entry in goalList:
+        splitTags=entry.split('|')
+        if len(splitTags)==1:
+            goalDict[entry]=[]
+        else:
+            goal=splitTags[-1]
+            tagList=splitTags[0:-1]
+            goalDict[goal]=tagList
+    goalList=list(goalDict.keys())
+    seed(randomisationSeed)
+    shuffle(goalList)
+    while len(goals)<25:
+        newGoal=goalList.pop()
+        if len(goalDict[newGoal])==0:
+            goals.append(newGoal)
+            print("New goal added")
             continue
         for tag in goalDict[newGoal]:
             if tag in goalSet:
-                continue
+                print("Goal excluded")
+                break
         goalSet.update(goalDict[newGoal])
         goals.append(newGoal)
-    return goals
+        print("New goal added")
+    return goals, goalDict, goalSet
+
+class BingoGoal(tk.Button):
+    def __init__(self, master, colour='white', *args, **kwargs):
+        self.master=master
+        self.colour=colour
+        super().__init__(*args, **kwargs)
         
-        
+    def ChangeColour(self):
+        if self.colour=='white':
+            self.colour='red'
+        elif self.colour=='red':
+            self.colour='green'
+        else:
+            self.colour='white'
+        self.config(bg=self.colour)
+        self.master.update_idletasks()
+            
+
+class BingoBoard():
+    def __init__(self, master, goalList, seed):
+        self.master=master
+        self.goalList=goalList
+        self.seed=seed
+        self.goals=GenerateBoard(self.seed, self.goalList)
+
+        self.ButtonReferences={}
+        row=1
+        column=1
+
+        for goal in self.goals:
+            SelectGoal=partial(self.ClickSquare, row, column)
+            GoalButton=BingoGoal(master=self.master, colour='white', bg='white', height=7, width=30, wraplength=80, borderwidth=1, padx=1, pady=1,text=goal, command=SelectGoal)
+            self.ButtonReferences[(row,column)]=GoalButton
+            GoalButton.grid(row=row, column=column)
+            column+=1
+            if column>=6:
+                row+=1
+                column=1
+        self.master.update_idletasks()
+
+    def ClickSquare(self,row, column):
+        self.ButtonReferences[(row, column)].ChangeColour()
+
+def callback():
+    scriptRunning=False
+
+def GoalListToJSON(goalList, outfile):
+    with open(outfile, "w+") as f:
+        f.write('Goal list (copy-paste the block below into a custom Bingosync board): \n')
+        f.write("\n")
+        f.write("[")
+        for i in range(len(goalList)-1):
+            f.write('{"name":"'+goalList[i]+'"}, \n')
+        f.write('{"name":"'+goalList[-1]+'"} \n')
+        f.write(']')
+
+
+
+master=tk.Tk()
+seedGUIWindow=tk.Toplevel()
+seedGUI=SeedGUI(seedGUIWindow)
+master.wait_window(seedGUI.master)
+if seedGUI.mode.get()=='JSON':
+    goals=GenerateBoard(seedGUI.seed, GoalList)
+    GoalListToJSON(goals, seedGUI.outfile.get()+'.txt')
+    print("JSON file created!")
+elif seedGUI.mode.get()=='window':
+    Notebook=tk.Toplevel()
+    Board=BingoBoard(Notebook, GoalList, seedGUI.seed)
+    master.wait_window(Board.master)
+else:
+    print("Error reading game mode:")
+
+
     
+
+
             
 
