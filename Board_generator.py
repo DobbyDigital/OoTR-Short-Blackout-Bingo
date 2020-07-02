@@ -158,18 +158,28 @@ class SeedGUI():
         self.seed.set(str(randomSeed))
         self.outfile=tk.StringVar()
         self.outfile.set("Board_"+str(self.seed.get()))
+        self.boardSize=tk.StringVar()
+        self.boardSize.set("5")
 
         self.master.title("Seed for board generation")
+        
         self.SeedLabel=tk.Label(self.master, text="Enter an integer seed for the board randomisation:")
         self.SeedBox=tk.Entry(self.master, textvariable=self.seed)
         self.SeedLabel.grid(row=1, column=1)
         self.SeedBox.grid(row=1, column=2)
+
+        self.boardSizeLabel=tk.Label(self.master, text="What side length of board (i.e. '4' for a 4x4 board)")
+        self.boardSizeLabel.grid(row=2, column=1)
+        self.boardSizeBox=tk.Entry(self.master, textvariable=self.boardSize)
+        self.boardSizeBox.grid(row=2, column=2)
+        
         self.ModeLabel=tk.Label(self.master, text="Create JSON file instead of window?")
         self.JSONModeCheck=tk.Checkbutton(self.master, variable = self.mode, \
                          onvalue = "JSON", offvalue ="window", height=1, \
                          width = 10)
         self.ModeLabel.grid(row=3, column=1)
         self.JSONModeCheck.grid(row=3, column=2)
+        
         self.OutfileLabel=tk.Label(self.master, text="What filenameshould be used for the JSON file (if applicable)")
         self.OutfileBox=tk.Entry(self.master, textvariable=self.outfile)
         self.OutfileLabel.grid(row=4, column=1, rowspan=2)
@@ -180,15 +190,16 @@ class SeedGUI():
     def VerifySeed(self):
         try:
             self.seed=int(self.seed.get())
+            self.boardSize=int(self.boardSize.get())
         except:
-            self.ErrorLabel=tk.Label(self.master, text="Error importing seed. Verify seed is integer")
+            self.ErrorLabel=tk.Label(self.master, text="Error importing seed. Verify seed and board size are integer")
             self.ErrorLabel.grid(row=1, column=3)
             return
         self.master.destroy()
         
         
         
-def GenerateBoard(randomisationSeed, goalList):
+def GenerateBoard(randomisationSeed, boardSize,goalList):
     goalDict={}
     goalSet=set()
     goals=[]
@@ -204,7 +215,7 @@ def GenerateBoard(randomisationSeed, goalList):
     goalList=list(goalDict.keys())
     seed(randomisationSeed)
     shuffle(goalList)
-    while len(goals)<25:
+    while len(goals)<boardSize**2:
         newGoal=goalList.pop()
         if len(goalDict[newGoal])==0:
             goals.append(newGoal)
@@ -222,7 +233,7 @@ def GenerateBoard(randomisationSeed, goalList):
             print("New goal added")
     return goals
         
-def GenerateBoardAndData(randomisationSeed, goalList):
+def GenerateBoardAndData(randomisationSeed, boardSize, goalList):
     goalDict={}
     goalSet=set()
     goals=[]
@@ -238,7 +249,7 @@ def GenerateBoardAndData(randomisationSeed, goalList):
     goalList=list(goalDict.keys())
     seed(randomisationSeed)
     shuffle(goalList)
-    while len(goals)<25:
+    while len(goals)<boardSize**2:
         newGoal=goalList.pop()
         if len(goalDict[newGoal])==0:
             goals.append(newGoal)
@@ -271,11 +282,12 @@ class BingoGoal(tk.Button):
             
 
 class BingoBoard():
-    def __init__(self, master, goalList, seed):
+    def __init__(self, master, goalList, seed, boardSize):
         self.master=master
         self.goalList=goalList
         self.seed=seed
-        self.goals=GenerateBoard(self.seed, self.goalList)
+        self.boardSize=boardSize
+        self.goals=GenerateBoard(self.seed, self.boardSize, self.goalList)
 
         self.ButtonReferences={}
         row=1
@@ -287,7 +299,7 @@ class BingoBoard():
             self.ButtonReferences[(row,column)]=GoalButton
             GoalButton.grid(row=row, column=column)
             column+=1
-            if column>=6:
+            if column>=self.boardSize+1:
                 row+=1
                 column=1
         self.master.update_idletasks()
@@ -298,14 +310,26 @@ class BingoBoard():
 def callback():
     scriptRunning=False
 
-def GoalListToJSON(goalList, outfile):
+def GoalListToJSON(goalList, boardSize, outfile):
     with open(outfile, "w+") as f:
         f.write('Goal list (copy-paste the block below into a custom Bingosync board): \n')
         f.write("\n")
         f.write("[")
-        for i in range(len(goalList)-1):
-            f.write('{"name":"'+goalList[i]+'"}, \n')
-        f.write('{"name":"'+goalList[-1]+'"} \n')
+        if boardSize==5:
+            for i in range(len(goalList)-1):
+                f.write('{"name":"'+goalList[i]+'"}, \n')
+            f.write('{"name":"'+goalList[-1]+'"} \n')
+        elif boardSize==4:
+            j=0
+            for i in range(len(goalList)):
+                f.write('{"name":"'+goalList[i]+'"}, \n')
+                j+=1
+                if j==4:
+                   f.write('{"name":"BLANK GOAL"}, \n')
+                   j=0    
+            for _ in range(4):
+                f.write('{"name":"BLANK GOAL"}, \n')
+            f.write('{"name":"BLANK GOAL"} \n')
         f.write(']')
 
 
@@ -315,12 +339,12 @@ seedGUIWindow=tk.Toplevel()
 seedGUI=SeedGUI(seedGUIWindow)
 master.wait_window(seedGUI.master)
 if seedGUI.mode.get()=='JSON':
-    goals=GenerateBoard(seedGUI.seed, GoalList)
-    GoalListToJSON(goals, seedGUI.outfile.get()+'.txt')
+    goals=GenerateBoard(seedGUI.seed, seedGUI.boardSize,GoalList)
+    GoalListToJSON(goals, seedGUI.boardSize, seedGUI.outfile.get()+'.txt')
     print("JSON file created!")
 elif seedGUI.mode.get()=='window':
     Notebook=tk.Toplevel()
-    Board=BingoBoard(Notebook, GoalList, seedGUI.seed)
+    Board=BingoBoard(Notebook, GoalList, seedGUI.seed,seedGUI.boardSize)
     master.wait_window(Board.master)
 else:
     print("Error reading game mode:")
