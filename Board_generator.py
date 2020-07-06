@@ -1,17 +1,102 @@
 from random import seed,shuffle, randint
-from functools import partial
 import tkinter as tk
 
 
 outfile="Testing"+".txt"
 
+GoalTypeSpread=[
+    [[1,0,0,1,1],[1,0,0,1,0],[1,1,0,0,1],[0,1,1,1,0],[0,1,1,0,0]],
+    [[0,0,1,0,1],[1,1,0,1,0],[0,1,0,1,1],[1,0,0,1,0],[1,0,1,0,0]],
+    [[1,0,1,0,0],[0,0,1,1,1],[0,1,0,0,1],[0,1,1,0,0],[1,0,0,1,1]],
+    [[0,1,0,1,0],[1,0,0,1,0],[0,1,1,0,1],[0,0,0,1,1],[1,1,1,0,0]],
+    [[1,1,0,1,0],[1,0,0,1,1],[0,0,1,1,0],[1,0,1,0,1],[0,1,1,0,0]],
+    [[0,0,0,1,1],[1,1,0,0,0],[1,0,1,1,0],[1,0,1,0,1],[0,1,1,0,1]],
+    [[0,1,0,1,1],[1,1,0,0,1],[1,0,1,1,0],[0,0,0,1,1],[1,1,1,0,0]],
+    [[1,0,1,0,1],[0,1,1,0,0],[0,1,0,1,0],[0,1,0,0,1],[1,0,1,1,0]],
+    [[0,1,1,1,0],[1,1,0,1,0],[0,1,1,0,0],[1,0,0,0,1],[0,0,1,1,1]],
+    [[0,1,0,1,0],[1,0,0,1,0],[0,1,1,0,1],[1,0,1,0,0],[0,0,0,1,1]]
+    ]
 
-
-
-GoalList=[
+DoGoalList=[
 	"VISITALLADULT|1 Skulltula from 3 different Adult Dungeons",
 	"VISITALLCHILD|1 Skulltula from each Child Dungeon",
 	"VISITALLADULT|Obtain 1 Small Key in 3 different Adult Dungeons",
+	"All 3 Kokiri Forest area Skulltulas",
+	"All 3 Skulltulas in Bottom of the Well",
+	"All 3 Skulltulas in Ice Cavern",
+	"All 4 Gerudo Valley area Skulltulas",
+	"All 4 Lon-Lon Ranch area Skulltulas",
+	"All 4 Lost Woods area Skulltulas",
+	"DEKUSKULLS|ALLDUNGEONSKULLS|All 4 Skulltulas in Deku Tree",
+	"JABUSKULLS|ALLDUNGEONSKULLS|All 4 Skulltulas in Jabu-Jabu",
+	"All 4 Wasteland/ Colossus area Skulltulas",
+       "LAKEHYLIA|3 Lake Hylia Skulltulas",
+	"DODONGOSKULLS|ALLDUNGEONSKULLS|All 5 Skulltulas in Dodongo's Cavern",
+       "FIRESKULLS|3 Skulltulas in Fire Temple",
+	"FIRESKULLS|ALLTEMPLESKULLS|All 5 Skulltulas in Fire Temple",
+ 	"FORESTSKULLS|3 Skulltulas in Forest Temple",       
+	"FORESTSKULLS|ALLTEMPLESKULLS|All 5 Skulltulas in Forest Temple",
+       "SHADOWSKULLS|3 Skulltulas in Shadow Temple",
+	"SHADOWSKULLS|ALLTEMPLESKULLS|All 5 Skulltulas in Shadow Temple",
+       "SPIRITSKULLS|3 Skulltulas in Spirit Temple",
+	"SPIRITSKULLS|ALLTEMPLESKULLS|All 5 Skulltulas in Spirit Temple",
+       "WATERSKULLS|3 Skulltulas in Water Temple",
+	"DEATHMOUNTAINSKULLS|All 8 Death Mountain area Skulltulas",
+	"DEATHMOUNTAINSKULLS|ALLOVERWORLDSKULLS|All 8 Death Mountain area Skulltulas",
+	"KAKARIKOSKULLS|6 Kakariko area Skulltulas",
+	"KAKARIKOSKULLS|ALLOVERWORLDSKULLS|All 8 Kakariko area Skulltulas",
+	"DOMAINSKULLS|6 Zora's Domain area Skulltulas",
+	"DOMAINSKULLS|ALLOVERWORLDSKULLS|All 8 Zora's Domain area Skulltulas",
+       "Both Gerudo's Fortress area Skulltulas",
+       "All 4 Adult Zora's Domain area Skulltulas",
+       "All 4 Child Zora's Domain area Skulltulas",      
+       "Both Hyrule Field area Skulltulas",
+       "4 Soft Soil Skulltulas",
+	"DODONGOBOSS|Beat Dodongo's Cavern",
+	"DEKUBOSS|Beat the Deku Tree",
+	"FORESTBOSS|Beat the Forest Temple",
+	"SHADOWBOSS|Beat the Shadow Temple",
+	"WATERBOSS|Beat the Water Temple",
+       "FORESTTEMPLE|Defeat Amy (Green Poe)",
+       "GTG|ICECAVERN|Defeat a White Wolfos",
+       "DODONGOSCAVERN|LIZALFOS|Defeat all Lizalfos in Dodongo's Cavern",
+       "SPIRITTEMPLE|LIZALFOS|Defeat all Lizalfos in Spirit Temple",
+        "FIRETEMPLE|Free 7 Different Gorons in Fire Temple",
+       "JABUJABUSBELLY|Defeat Big Octo",
+       "SHADOWBOSS|Defeat Bongo-Bongo",
+       "FIRETEMPLE|Defeat both Flare Dancers",
+       "WATERTEMPLE|Defeat Dark Link",
+       "DODONGOBOSS|Defeat King Dodongo",
+       "FORESTTEMPLE|Defeat Meg (purple Poe)",
+       "WATERBOSS|Defeat Morpha",
+       "IRONKNUCKLE|SPIRITBOSS|Defeat Nabooru-Knuckle",
+       "FORESTBOSS|Defeat Phantom Ganon",
+       "DEKUBOSS|Defeat Queen Gohma",       
+       "IRONKNUCKLE|Defeat 4 Different Iron Knuckles",
+       "GANONSCASTLE|Get to the end of Fire Trial",
+       "GANONSCASTLE|Get to the end of Forest Trial",
+       "GANONSCASTLE|Get to the end of Light Trial",
+       "GANONSCASTLE|Get to the end of Shadow Trial",
+       "GANONSCASTLE|Get to the end of Spirit Trial",
+	"EPONA|Cow in House",
+	"Defeat a Skull Kid",
+	"GTG|Gerudo's Card",
+	"MASK|Spooky Mask",
+	"BEANS|Plant bean in Death Mountain Crater",
+	"Win A Bombchu Bowling Prize",
+       "SKULLREWARD|Collect the reward for 10 skulltula tokens",
+       "SKULLREWARD|Collect the reward for 20 skulltula tokens",
+       "Collect the song/item from Sheik at Colossus",
+       "Collect the item/song from the pot in Goron City",
+       "Collect the item/song from Deku Theatre Skull Mask",
+       "SILVERRUPEES|Complete 3 Silver Rupee Rooms",
+       "SILVERRUPEES|Complete 4 Silver Rupee Rooms",
+       "Defeat 3 Different Big Poes",
+       "Defeat 4 Different Like-Likes",
+       "Open Shadow Temple",
+        ]
+
+FindGoalList=[
        "DUNGEONS|DEKUBOSS|DODONGOBOSS|FORESTBOSS|WATERBOSS|SHADOWBOSS|2 Stones",
        "DUNGEONS|DEKUBOSS|DODONGOBOSS|FORESTBOSS|WATERBOSS|SHADOWBOSS|3 Medallions",
        "DUNGEONS|DEKUBOSS|DODONGOBOSS|FORESTBOSS|WATERBOSS|SHADOWBOSS|4 Medallions",
@@ -57,93 +142,21 @@ GoalList=[
 	"SONGS|At least 4 warpsongs",        
 	"HEARTS|9 Hearts",
 	"HEARTS|10 Hearts",
-	"All 3 Kokiri Forest area Skulltulas",
-	"All 3 Skulltulas in Bottom of the Well",
-	"All 3 Skulltulas in Ice Cavern",
-	"All 4 Gerudo Valley area Skulltulas",
-	"All 4 Lon-Lon Ranch area Skulltulas",
-	"All 4 Lost Woods area Skulltulas",
-	"All 4 Skulltulas in Deku Tree",
-	"All 4 Skulltulas in Jabu-Jabu",
-	"All 4 Wasteland/ Colossus area Skulltulas",
-       "LAKEHYLIA|3 Lake Hylia Skulltulas",
-	"All 5 Skulltulas in Dodongo's Cavern",
-       "FIRESKULLS|4 Skulltulas in Fire Temple",
-	"FIRESKULLS|All 5 Skulltulas in Fire Temple",
-	"All 5 Skulltulas in Forest Temple",
-       "SHADOWSKULLS|4 Skulltulas in Shadow Temple",
-	"SHADOWSKULLS|All 5 Skulltulas in Shadow Temple",
-       "SPIRITSKULLS|4 Skulltulas in Spirit Temple",
-	"SPIRITSKULLS|All 5 Skulltulas in Spirit Temple",
-       "WATERSKULLS|3 Skulltulas in Water Temple",
-	"All 8 Death Mountain area Skulltulas",
-	"All 8 Kakariko area Skulltulas",
-	"DOMAINSKULLS|All 4 Child Zora's Domain area Skulltulas",
-	"DOMAINSKULLS|All 4 Adult Zora's Domain area Skulltulas",
-       "Both Gerudo's Fortress area Skulltulas",
-       "All 4 Adult Zora's Domain area Skulltulas",
-       "All 4 Child Zora's Domain area Skulltulas",      
-       "Both Hyrule Field area Skulltulas",
-       "4 Soft Soil Skulltulas",
-	"DODONGOBOSS|Beat Dodongo's Cavern",
-	"DEKUBOSS|Beat the Deku Tree",
-	"FORESTBOSS|Beat the Forest Temple",
-	"SHADOWBOSS|Beat the Shadow Temple",
-	"WATERBOSS|Beat the Water Temple",
-       "FORESTTEMPLE|Defeat Amy (Green Poe)",
-       "GTG|ICECAVERN|Defeat a White Wolfos",
-       "DODONGOSCAVERN|LIZALFOS|Defeat all Lizalfos in Dodongo's Cavern",
-       "SPIRITTEMPLE|LIZALFOS|Defeat all Lizalfos in Spirit Temple",
-        "FIRETEMPLE|Free 7 Different Gorons in Fire Temple",
-       "JABUJABUSBELLY|Defeat Big Octo",
-       "SHADOWBOSS|Defeat Bongo-Bongo",
-       "FIRETEMPLE|Defeat both Flare Dancers",
-       "WATERTEMPLE|Defeat Dark Link",
-       "DODONGOBOSS|Defeat King Dodongo",
-       "FORESTTEMPLE|Defeat Meg (purple Poe)",
-       "WATERBOSS|Defeat Morpha",
-       "IRONKNUCKLE|SPIRITBOSS|Defeat Nabooru-Knuckle",
-       "FORESTBOSS|Defeat Phantom Ganon",
-       "DEKUBOSS|Defeat Queen Gohma",
        "FORESTKEYS|Obtain 4 Different Keys in Forest Temple",
-       "FORESTKEYS|Obtain all 5 Small Keys in Forest Temple",
+       "FORESTKEYS|MAXKEYS|Obtain all 5 Small Keys in Forest Temple",
        "WATERKEYS|Obtain 4 Different Small Keys in Water Temple",
        "SHADOWKEYS|Obtain 4 Different Small Keys in Shadow Temple",
-       "SHADOWKEYS|Obtain all 5 Small Keys in Shadow Temple",
+       "SHADOWKEYS|MAXKEYS|Obtain all 5 Small Keys in Shadow Temple",
        "FIREKEYS|Obtain 6 Different Small Keys in Fire Temple",
-       "FIREKEYS|Obtain all 8 Small Keys in Fire Temple",
-       "IRONKNUCKLE|Defeat 4 Different Iron Knuckles",
-       "GANONSCASTLE|Get to the end of Fire Trial",
-       "GANONSCASTLE|Get to the end of Forest Trial",
-       "GANONSCASTLE|Get to the end of Light Trial",
-       "GANONSCASTLE|Get to the end of Shadow Trial",
-       "GANONSCASTLE|Get to the end of Spirit Trial",
-       "GTG|Obtain 4 Different Keys in Gerudo Training Grounds",
-       "GTG|Obtain 5 Different Keys in Gerudo Training Grounds",
+       "FIREKEYS|MAXKEYS|Obtain all 8 Small Keys in Fire Temple",
 	"BOTTLE|Bottle of Blue Fire",
        "BOTTLE|Bottled Fairy",
        "BOTTLE|EPONA|Bottle of Milk",
        "BOTTLE|Find Ruto's Letter",
-	"EPONA|Cow in House",
-	"Defeat a Skull Kid",
 	"Double Defense OR Double Magic",
-	"GTG|Gerudo's Card",
-	"MASK|Spooky Mask",
-	"BEANS|Plant bean in Death Mountain Crater",
 	"FAIRYSPELL|At least two Fairy Spells",
-	"Win A Bombchu Bowling Prize",
 	"Fall Prey to 3 Ice Traps",
-       "SKULLREWARD|Collect the reward for 10 skulltula tokens",
-       "SKULLREWARD|Collect the reward for 20 skulltula tokens",
-       "Collect the song/item from Sheik at Colossus",
-       "Collect the item/song from the pot in Goron City",
-       "Collect the item/song from Deku Theatre Skull Mask",
-       "SILVERRUPEES|Complete 3 Silver Rupee Rooms",
-       "SILVERRUPEES|Complete 4 Silver Rupee Rooms",
        "ELEMENTALARROWS|At least 2 Elemental Arrows",
-       "Defeat 3 Different Big Poes",
-       "Defeat 4 Different Like-Likes",
-       "Open Shadow Temple",
         ]
 
 class SeedGUI():
@@ -332,25 +345,25 @@ def GoalListToJSON(goalList, boardSize, outfile):
             f.write('{"name":"BLANK GOAL"} \n')
         f.write(']')
 
-
-
-master=tk.Tk()
-seedGUIWindow=tk.Toplevel()
-seedGUI=SeedGUI(seedGUIWindow)
-master.wait_window(seedGUI.master)
-if seedGUI.mode.get()=='JSON':
-    goals=GenerateBoard(seedGUI.seed, seedGUI.boardSize,GoalList)
-    GoalListToJSON(goals, seedGUI.boardSize, seedGUI.outfile.get()+'.txt')
-    print("JSON file created!")
-elif seedGUI.mode.get()=='window':
-    Notebook=tk.Toplevel()
-    Board=BingoBoard(Notebook, GoalList, seedGUI.seed,seedGUI.boardSize)
-    master.wait_window(Board.master)
-else:
-    print("Error reading game mode:")
-
-
-    
+##
+##
+##master=tk.Tk()
+##seedGUIWindow=tk.Toplevel()
+##seedGUI=SeedGUI(seedGUIWindow)
+##master.wait_window(seedGUI.master)
+##if seedGUI.mode.get()=='JSON':
+##    goals=GenerateBoard(seedGUI.seed, seedGUI.boardSize,GoalList)
+##    GoalListToJSON(goals, seedGUI.boardSize, seedGUI.outfile.get()+'.txt')
+##    print("JSON file created!")
+##elif seedGUI.mode.get()=='window':
+##    Notebook=tk.Toplevel()
+##    Board=BingoBoard(Notebook, GoalList, seedGUI.seed,seedGUI.boardSize)
+##    master.wait_window(Board.master)
+##else:
+##    print("Error reading game mode:")
+##
+##
+##    
 
 
             
