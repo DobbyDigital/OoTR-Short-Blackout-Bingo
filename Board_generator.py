@@ -7,7 +7,7 @@ outfile="Testing"+".txt"
 
 class GoalList():
     def __init__(self):
-        self.GoalTypeSpread=[
+        self.GoalTypeSpread5x5=[
             [[1,0,0,1,1],[1,0,0,1,0],[1,1,0,0,1],[0,1,1,1,0],[0,1,1,0,0]],
             [[0,0,1,0,1],[1,1,0,1,0],[0,1,0,1,1],[1,0,0,1,0],[1,0,1,0,0]],
             [[1,0,1,0,0],[0,0,1,1,1],[0,1,0,0,1],[0,1,1,0,0],[1,0,0,1,1]],
@@ -18,6 +18,18 @@ class GoalList():
             [[1,0,1,0,1],[0,1,1,0,0],[0,1,0,1,0],[0,1,0,0,1],[1,0,1,1,0]],
             [[0,1,1,1,0],[1,1,0,1,0],[0,1,1,0,0],[1,0,0,0,1],[0,0,1,1,1]],
             [[0,1,0,1,0],[1,0,0,1,0],[0,1,1,0,1],[1,0,1,0,0],[0,0,0,1,1]]
+            ]
+        self.GoalTypeSpread4x4=[
+            [[1,1,0,0],[1,0,1,0],[0,1,0,1],[0,0,1,1]],
+            [[0,1,0,1],[1,0,1,0],[1,0,1,0],[0,1,0,1]],
+            [[1,0,1,0],[0,1,0,1],[0,1,0,1],[1,0,1,0]],
+            [[1,1,0,0],[0,0,1,1],[0,0,1,1],[1,1,0,0]],
+            [[0,1,0,1],[0,1,0,1],[1,0,1,0],[1,0,1,0]],
+            [[0,0,1,1],[1,1,0,0],[0,0,1,1],[1,1,0,0]],
+            [[1,0,1,0],[0,0,1,1],[1,1,0,0],[0,1,0,1]],
+            [[0,0,1,1],[1,1,0,0],[1,1,0,0],[0,0,1,1]],
+            [[0,0,1,1],[0,1,0,1],[1,0,1,0],[1,1,0,0]],
+            [[1,0,1,0],[0,1,0,1],[0,1,0,1],[1,0,1,0]],
             ]
 
         self.DoGoalList=[
@@ -97,6 +109,8 @@ class GoalList():
            "Defeat 3 Different Big Poes",
            "Defeat 4 Different Like-Likes",
            "Open Shadow Temple",
+            "SPIRITTEMPLE|Defeat 2 Iron Knuckles in Spirit Temple",
+            "Defeat both Dead Hands"
             ]
 
         self.FindGoalList=[
@@ -160,6 +174,7 @@ class GoalList():
                 "FAIRYSPELL|At least two Fairy Spells",
                 "Fall Prey to 3 Ice Traps",
                "ELEMENTALARROWS|At least 2 Elemental Arrows",
+               "BOW|QUIVER|SLINGSHOT|Quiver 50 OR Bullet Bag 50"
                 ]
 
 class SeedGUI():
@@ -213,7 +228,12 @@ class SeedGUI():
             return
         self.master.destroy()
         
-        
+def UpdateIndex(i,j,boardSize):
+    j+=1
+    if j>=boardSize:
+        j=0
+        i+=1
+    return i,j
         
 def GenerateBoard(randomisationSeed, boardSize,goalList):
     goalDict={}
@@ -241,7 +261,13 @@ def GenerateBoard(randomisationSeed, boardSize,goalList):
             tagList=splitTags[0:-1]
             goalDict[goal]=tagList
     seed(randomisationSeed)
-    GoalTypeSpread=choice(goalList.GoalTypeSpread)
+    if boardSize==4:
+        GoalTypeSpread=choice(goalList.GoalTypeSpread4x4)
+    elif boardSize==5:
+        GoalTypeSpread=choice(goalList.GoalTypeSpread5x5)
+    else:
+        print("Unsupported board size. Board must be 4x4 or 5x5")
+        raise Exception
     shuffle(FindGoalList)
     shuffle(DoGoalList)
     i=0
@@ -256,10 +282,7 @@ def GenerateBoard(randomisationSeed, boardSize,goalList):
             if len(goalDict[newGoal])==0:
                 goals.append(newGoal)
                 print("New goal added")
-                j+=1
-                if j>=5:
-                    j=0
-                    i+=1
+                i,j=UpdateIndex(i,j,boardSize)
                 continue
             foundBannedTag=False
             for tag in goalDict[newGoal]:
@@ -273,10 +296,7 @@ def GenerateBoard(randomisationSeed, boardSize,goalList):
                 goals.append(newGoal)
                 print("New goal added")
             if updateIndex:
-                j+=1
-                if j>=5:
-                    j=0
-                    i+=1
+                i,j=UpdateIndex(i,j,boardSize)
     except Exception as e:
         print(e)
         print(i)
@@ -376,11 +396,11 @@ def GoalListToJSON(goalList, boardSize, outfile):
                 f.write('{"name":"'+goalList[i]+'"}, \n')
                 j+=1
                 if j==4:
-                   f.write('{"name":"BLANK GOAL"}, \n')
+                   f.write('{"name":" "}, \n')
                    j=0    
             for _ in range(4):
-                f.write('{"name":"BLANK GOAL"}, \n')
-            f.write('{"name":"BLANK GOAL"} \n')
+                f.write('{"name":" "}, \n')
+            f.write('{"name":" "} \n')
         f.write(']')
 
 
